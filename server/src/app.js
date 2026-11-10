@@ -5,10 +5,27 @@ import authRoutes from './routes/auth.js';
 import listingRoutes from './routes/listings.js';
 import userRoutes from './routes/users.js';
 import reviewRoutes from './routes/reviews.js';
+import helmet from 'helmet';
 
 const app = express();
 
 app.use(morgan('dev'));
+app.use(
+  helmet.contentSecurityPolicy({
+    useDefaults: false,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc:  ["'self'"],                 // no 'unsafe-inline' — blocks inline handlers
+      styleSrc:   ["'self'", "'unsafe-inline'"], // Vite/Tailwind emit inline styles in dev
+      imgSrc:     ["'self'", 'data:'],
+      connectSrc: ["'self'", 'http://localhost:5175'],
+      objectSrc:  ["'none'"],
+      frameAncestors: ["'none'"],
+      baseUri:    ["'self'"],
+      formAction: ["'self'"]
+    }
+  })
+);
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
 app.use(express.json());
 
