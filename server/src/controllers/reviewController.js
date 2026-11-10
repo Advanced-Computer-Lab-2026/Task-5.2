@@ -1,5 +1,12 @@
 import Joi from 'joi';
+import DOMPurify from 'isomorphic-dompurify';
 import { Review } from '../models/Review.js';
+
+const CLEAN = {
+  ALLOWED_TAGS: ['b', 'strong', 'i', 'em', 'u', 'p', 'br', 'ul', 'ol', 'li', 'blockquote', 'code', 'a'],
+  ALLOWED_ATTR: ['href', 'title'],
+  ALLOW_DATA_ATTR: false,
+};
 
 const reviewSchema = Joi.object({
   listing: Joi.string().hex().length(24).required(),
@@ -30,7 +37,10 @@ export async function createReview(req, res, next) {
     const { value, error } = reviewSchema.validate(req.body);
     if (error) return res.status(400).json({ message: error.message });
 
-    const doc = await Review.create({ ...value, author: req.user.id });
+    const safeBody = DOMPurify.sanitize(value.body, CLEAN).trim();
+    if (!safeBody) return res.status(400).json({ message: 'Review body is empty after sanitization' });
+
+    const doc = await Review.create({ ...value, body: safeBody, author: req.user.id });
     const review = await Review.findById(doc._id).populate('author', 'name').lean();
     res.status(201).json({ review });
   } catch (err) { next(err); }

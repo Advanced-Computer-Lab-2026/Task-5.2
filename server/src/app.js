@@ -1,6 +1,7 @@
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
+import helmet from 'helmet';
 import authRoutes from './routes/auth.js';
 import listingRoutes from './routes/listings.js';
 import userRoutes from './routes/users.js';
@@ -9,6 +10,31 @@ import reviewRoutes from './routes/reviews.js';
 const app = express();
 
 app.use(morgan('dev'));
+
+// Security headers, including a strict Content-Security-Policy.
+// Defense-in-depth: DOMPurify cleans the markup, and this policy tells the
+// browser to refuse inline/injected script even if something slips through.
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        scriptSrcAttr: ["'none'"], // blocks inline handlers such as onerror= / onclick=
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        imgSrc: ["'self'", 'data:'],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        frameAncestors: ["'none'"],
+        formAction: ["'self'"],
+      },
+    },
+    // The client (:5175) calls this API cross-origin, so allow it to read responses.
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
+
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
 app.use(express.json());
 
