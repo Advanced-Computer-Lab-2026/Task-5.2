@@ -1,4 +1,5 @@
 import express from 'express';
+import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
 import authRoutes from './routes/auth.js';
@@ -7,6 +8,25 @@ import userRoutes from './routes/users.js';
 import reviewRoutes from './routes/reviews.js';
 
 const app = express();
+
+// Defense-in-depth layer 2: a browser-enforced Content-Security-Policy.
+// Even if some markup slips past sanitization, this policy tells the browser to
+// run scripts only from our own origin and to refuse inline/injected scripts
+// (no 'unsafe-inline'), which is exactly how stored-XSS payloads try to execute.
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        frameAncestors: ["'none'"],
+      },
+    },
+  })
+);
 
 app.use(morgan('dev'));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
