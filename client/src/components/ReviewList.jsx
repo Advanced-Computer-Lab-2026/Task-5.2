@@ -16,6 +16,7 @@ export default function ReviewList({ reviews }) {
             {'★'.repeat(r.rating || 0)}{'☆'.repeat(5 - (r.rating || 0))}
             {' • '}by {r.author?.name || 'unknown'}
           </div>
+          
           <div
             className="review-body mt-2 text-sm"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(r.body) }}
