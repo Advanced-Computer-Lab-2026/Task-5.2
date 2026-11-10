@@ -1,6 +1,12 @@
 import Joi from 'joi';
 import { Review } from '../models/Review.js';
 
+const CLEAN = {
+  ALLOWED_TAGS: ['b', 'strong', 'i', 'em', 'u', 'p', 'br', 'ul', 'ol', 'li', 'blockquote', 'code', 'a'],
+  ALLOWED_ATTR: ['href', 'title'],
+  ALLOW_DATA_ATTR: false,
+};
+
 const reviewSchema = Joi.object({
   listing: Joi.string().hex().length(24).required(),
   rating: Joi.number().min(1).max(5).default(5),
@@ -24,7 +30,7 @@ export async function getReviewsForListing(req, res, next) {
   } catch (err) { next(err); }
 }
 
-// POST /api/reviews  (requires auth)
+// POST /api/reviews  (requires auth).
 export async function createReview(req, res, next) {
   try {
     const { value, error } = reviewSchema.validate(req.body);
