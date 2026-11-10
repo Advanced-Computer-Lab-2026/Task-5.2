@@ -1,3 +1,6 @@
+
+import helmet from 'helmet';
+
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
@@ -7,7 +10,22 @@ import userRoutes from './routes/users.js';
 import reviewRoutes from './routes/reviews.js';
 
 const app = express();
-
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: false,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],          // no 'unsafe-inline' → injected inline JS is blocked
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      frameAncestors: ["'none'"],
+      formAction: ["'self'"],
+      imgSrc: ["'self'", 'data:'],
+      styleSrc: ["'self'"],
+      connectSrc: ["'self'"],
+    },
+  },
+}));
 app.use(morgan('dev'));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
 app.use(express.json());
