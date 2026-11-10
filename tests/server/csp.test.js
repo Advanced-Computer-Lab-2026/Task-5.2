@@ -1,28 +1,20 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
-// import { MongoMemoryServer } from 'mongodb-memory-server';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 import app from '../../server/src/app.js';
-import dotevn from 'dotenv';
-dotevn.config({ path: 'server/.env' });
 
-// let mongo;
+let mongo;
 
-// beforeAll(async () => {
-//   process.env.JWT_SECRET = 'test-secret';
-//   process.env.JWT_EXPIRES_IN = '1h';
-//   mongo = await MongoMemoryServer.create();
-//   await mongoose.connect(mongo.getUri());
-// }, 60000);
 beforeAll(async () => {
-  await mongoose.connect(process.env.MONGO_URI);
+  process.env.JWT_SECRET = 'test-secret';
+  process.env.JWT_EXPIRES_IN = '1h';
+  mongo = await MongoMemoryServer.create();
+  await mongoose.connect(mongo.getUri());
 }, 60000);
 
-// afterAll(async () => {
-//   await mongoose.disconnect();
-//   if (mongo) await mongo.stop();
-// });
 afterAll(async () => {
   await mongoose.disconnect();
+  if (mongo) await mongo.stop();
 });
 
 async function registerAndGetToken() {
