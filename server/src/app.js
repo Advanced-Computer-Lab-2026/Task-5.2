@@ -1,4 +1,5 @@
 import express from 'express';
+const helmet = require('helmet');
 import morgan from 'morgan';
 import cors from 'cors';
 import authRoutes from './routes/auth.js';
@@ -6,7 +7,21 @@ import listingRoutes from './routes/listings.js';
 import userRoutes from './routes/users.js';
 import reviewRoutes from './routes/reviews.js';
 
+
 const app = express();
+
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://trusted-scripts.com"],
+      styleSrc: ["'self'", "https://googleapis.com"],
+      fontSrc: ["'self'", "https://gstatic.com"],
+      imgSrc: ["'self'", "data:", "https://cloudinary.com"],
+      connectSrc: ["'self'", "https://yourdomain.com"], // Crucial for React API calls
+    },
+  })
+);
 
 app.use(morgan('dev'));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
