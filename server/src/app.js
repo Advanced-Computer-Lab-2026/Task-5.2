@@ -1,6 +1,7 @@
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
+import helmet from 'helmet';
 import authRoutes from './routes/auth.js';
 import listingRoutes from './routes/listings.js';
 import userRoutes from './routes/users.js';
@@ -8,6 +9,27 @@ import reviewRoutes from './routes/reviews.js';
 
 const app = express();
 
+// Content-Security-Policy: second layer behind DOMPurify. Even if malicious markup
+// slipped through, the browser refuses to run inline or third-party script.
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: false,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],          // no 'unsafe-inline' / 'unsafe-eval'
+      scriptSrcAttr: ["'none'"],      // blocks inline handlers like onerror=
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:'],
+      connectSrc: ["'self'", 'http://localhost:4000'],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
+    },
+  },
+  // the client (:5175) loads API responses cross-origin
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
 app.use(morgan('dev'));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
 app.use(express.json());
