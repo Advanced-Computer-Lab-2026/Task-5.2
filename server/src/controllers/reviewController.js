@@ -1,5 +1,4 @@
 import Joi from 'joi';
-import DOMPurify from 'isomorphic-dompurify';
 import { Review } from '../models/Review.js';
 
 const CLEAN = {
@@ -37,10 +36,7 @@ export async function createReview(req, res, next) {
     const { value, error } = reviewSchema.validate(req.body);
     if (error) return res.status(400).json({ message: error.message });
 
-    const safeBody = DOMPurify.sanitize(value.body, CLEAN).trim();
-    if (!safeBody) return res.status(400).json({ message: 'Review body is empty after sanitization' });
-
-    const doc = await Review.create({ ...value, body: safeBody, author: req.user.id });
+    const doc = await Review.create({ ...value, author: req.user.id });
     const review = await Review.findById(doc._id).populate('author', 'name').lean();
     res.status(201).json({ review });
   } catch (err) { next(err); }
