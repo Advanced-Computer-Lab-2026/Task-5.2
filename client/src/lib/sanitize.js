@@ -5,4 +5,11 @@
 // TODO (security): right now this returns the HTML untouched, so whatever a
 // reviewer typed — including <script> and onerror handlers — is injected into
 // every viewer's page. Make this strip dangerous markup before it is rendered.
-export const sanitizeHtml = (dirty) => dirty;
+
+import DOMPurify from 'dompurify';
+
+const CONFIG = {
+  ALLOWED_TAGS: ["b", "i", "em", "strong", "u", "p", "br", "ul", "ol", "li", "a"],
+};
+
+export const sanitizeHtml = (dirty) => DOMPurify.sanitize(dirty ?? "", CONFIG);
