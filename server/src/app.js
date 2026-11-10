@@ -5,8 +5,9 @@ import authRoutes from './routes/auth.js';
 import listingRoutes from './routes/listings.js';
 import userRoutes from './routes/users.js';
 import reviewRoutes from './routes/reviews.js';
-
+import helmet from 'helmet';
 const app = express();
+app.use(helmet());
 
 app.use(morgan('dev'));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
@@ -29,5 +30,24 @@ app.use((err, req, res, next) => {
   console.error(err);
   res.status(err.status || 500).json({ message: err.message || 'Server Error' });
 });
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        fontSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'", 'http://localhost:4000'],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        frameAncestors: ["'none'"],
+        formAction: ["'self'"]
+      }
+    }
+  })
+);
 
 export default app;
