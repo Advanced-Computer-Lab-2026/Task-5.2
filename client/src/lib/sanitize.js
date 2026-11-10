@@ -8,3 +8,4 @@ import DOMPurify from "dompurify";
 // reviewer typed — including <script> and onerror handlers — is injected into
 // every viewer's page. Make this strip dangerous markup before it is rendered.
 export const sanitizeHtml = (dirty) => DOMPurify.sanitize(dirty);
+//hahah
