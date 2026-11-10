@@ -1,8 +1,12 @@
-// Reviews are rendered as HTML so people can use light formatting (bold, links).
-// This helper is the single place review HTML passes through before it is handed
-// to React's dangerouslySetInnerHTML.
-//
-// TODO (security): right now this returns the HTML untouched, so whatever a
-// reviewer typed — including <script> and onerror handlers — is injected into
-// every viewer's page. Make this strip dangerous markup before it is rendered.
-export const sanitizeHtml = (dirty) => dirty;
+import DOMPurify from 'dompurify';
+
+// Sanitize at display time so existing stored reviews receive the same protection.
+// Keep this as the only boundary before review HTML reaches dangerouslySetInnerHTML.
+export const sanitizeHtml = (dirty) => DOMPurify.sanitize(dirty, {
+  ALLOWED_TAGS: ['b', 'strong', 'i', 'em', 'p', 'br', 'ul', 'ol', 'li', 'a'],
+  ALLOWED_ATTR: ['href', 'title'],
+  ALLOW_DATA_ATTR: false,
+  ALLOW_ARIA_ATTR: false,
+  // Allow HTTP(S) and relative links; exclude executable and other URL schemes.
+  ALLOWED_URI_REGEXP: /^(?:https?:\/\/|[^a-zA-Z]|[a-zA-Z+.-]+(?:[^a-zA-Z+.:\-]|$))/i,
+});
