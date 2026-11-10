@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import { Review } from '../models/Review.js';
+import { sanitizeReviewHtml, isEffectivelyEmpty } from '../lib/sanitize.js';
 
 const reviewSchema = Joi.object({
   listing: Joi.string().hex().length(24).required(),
@@ -30,7 +31,15 @@ export async function createReview(req, res, next) {
     const { value, error } = reviewSchema.validate(req.body);
     if (error) return res.status(400).json({ message: error.message });
 
-    const doc = await Review.create({ ...value, author: req.user.id });
+    // Never store user-supplied markup as-is: strip anything executable and keep
+    // only the allowlisted formatting. If nothing readable is left, the review
+    // was pure markup/script, so reject it instead of saving an empty body.
+    const body = sanitizeReviewHtml(value.body);
+    if (isEffectivelyEmpty(body)) {
+      return res.status(400).json({ message: 'Review body must contain some text' });
+    }
+
+    const doc = await Review.create({ ...value, body, author: req.user.id });
     const review = await Review.findById(doc._id).populate('author', 'name').lean();
     res.status(201).json({ review });
   } catch (err) { next(err); }
