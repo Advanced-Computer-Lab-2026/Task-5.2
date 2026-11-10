@@ -5,17 +5,21 @@ import authRoutes from './routes/auth.js';
 import listingRoutes from './routes/listings.js';
 import userRoutes from './routes/users.js';
 import reviewRoutes from './routes/reviews.js';
-import helmet from 'helmet';
+import helmet from "helmet"
+
+
 const app = express();
 
 app.use(
-  helmet.contentSecurityPolicy({
-    directives: {
-      defaulttSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      objectSrc: ["'none'"],
-      upgradeInsecureRequests: [],
-    }
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        scriptSrcAttr: ["'none'"],
+        objectSrc: ["'none'"],
+      },
+    },
   })
 );
 

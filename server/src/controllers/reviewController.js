@@ -1,13 +1,13 @@
 import Joi from 'joi';
 import { Review } from '../models/Review.js';
-import { sanitizeHtml } from '../utils/sanitizeHtml.js';
+
 
 const reviewSchema = Joi.object({
   listing: Joi.string().hex().length(24).required(),
-    rating: Joi.number().integer().min(1).max(5).default(5),
+  rating: Joi.number().integer().min(1).max(5).default(5),
 
   // The body is free-form HTML (the reviewer can add bold text, links, etc.).
-    body: Joi.string().trim().min(1).max(5000).required(),
+  body: Joi.string().trim().min(1).max(5000).required(),
   // the author is always the logged-in user, never taken from the body
   author: Joi.forbidden()
 });
@@ -22,7 +22,7 @@ export async function getReviewsForListing(req, res, next) {
       .populate('author', 'name')
       .sort({ createdAt: -1 })
       .lean();
-      res.json({ reviews: reviews.map(r => ({ ...r, body: sanitizeHtml(r.body) })) });
+    res.json({ reviews });
   } catch (err) { next(err); }
 }
 
