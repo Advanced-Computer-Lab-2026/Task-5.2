@@ -1,5 +1,15 @@
 import Joi from 'joi';
 import { User } from '../models/User.js';
+import createDOMPurify from 'dompurify';
+import { JSDOM } from 'jsdom';
+
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
+
+const PURIFY_CONFIG = {
+  ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br'],
+  ALLOWED_ATTR: ['href', 'target', 'rel']
+};
 
 const updateSchema = Joi.object({
   name: Joi.string().min(2).max(60),
@@ -35,7 +45,18 @@ export async function updateUser(req, res, next) {
     const { value, error } = updateSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
     if (error) return res.status(400).json({ message: error.message });
 
-    const doc = await User.findByIdAndUpdate(req.params.id, { $set: value }, { new: true, runValidators: true });
+    const sanitizedName = DOMPurify.sanitize(value.name || '', PURIFY_CONFIG);
+    const sanitizedEmail = DOMPurify.sanitize(value.email || '', PURIFY_CONFIG);
+    const sanaitizedPassword = DOMPurify.sanitize(value.password || '', PURIFY_CONFIG);
+    // Replace the raw name with the sanitized version before saving
+    const safeData = {
+      ...value,
+      name: sanitizedName,
+      email: sanitizedEmail,
+      password: sanaitizedPassword
+    };
+    
+    const doc = await User.findByIdAndUpdate(req.params.id, { $set: safeData }, { new: true, runValidators: true });
     if (!doc) return res.status(404).json({ message: 'User not found' });
     res.json({ user: publicUser(doc) });
   } catch (err) {
