@@ -5,9 +5,24 @@ import authRoutes from './routes/auth.js';
 import listingRoutes from './routes/listings.js';
 import userRoutes from './routes/users.js';
 import reviewRoutes from './routes/reviews.js';
+import helmet from "helmet";
 
 const app = express();
-
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"], 
+        imgSrc: ["'self'", "data:", "blob:"],
+        objectSrc: ["'none'"],
+        connectSrc: ["'self'", "http://localhost:5175", "http://localhost:4000"],
+        upgradeInsecureRequests: [],
+      },
+    },
+  })
+);
+// app.use(helmet());
 app.use(morgan('dev'));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
 app.use(express.json());

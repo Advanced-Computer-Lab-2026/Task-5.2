@@ -4,5 +4,10 @@
 //
 // TODO (security): right now this returns the HTML untouched, so whatever a
 // reviewer typed — including <script> and onerror handlers — is injected into
-// every viewer's page. Make this strip dangerous markup before it is rendered.
-export const sanitizeHtml = (dirty) => dirty;
+// every viewer's page. Make this strip 
+
+import DOMPurify from "dompurify";
+export const sanitizeHtml = (dirty) => {
+  if (!dirty) return '';
+  return DOMPurify.sanitize(dirty);
+};
