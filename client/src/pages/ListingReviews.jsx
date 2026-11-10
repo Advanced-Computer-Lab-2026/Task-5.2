@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../hooks/useAuth'
 import ReviewList from '../components/ReviewList'
+import { sanitizeHtml } from '../lib/sanitize'
 
 export default function ListingReviews() {
   const { id } = useParams()
@@ -34,7 +35,7 @@ export default function ListingReviews() {
     e.preventDefault()
     setError('')
     try {
-      await api.post('/reviews', { listing: id, body, rating: Number(rating) })
+      await api.post('/reviews', { listing: id, body: sanitizeHtml(body), rating: Number(rating) })
       setBody('')
       setRating(5)
       load()

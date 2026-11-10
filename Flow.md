@@ -59,7 +59,7 @@ You need a logged-in user and a listing to attach a review to.
 
    ```html
    <img src=x onerror="alert('XSS — your token: ' + localStorage.getItem('token'))">
-   ```
+   ``` 
 
 3. The review is now saved on the server **unchanged**.
 
@@ -71,7 +71,7 @@ You need a logged-in user and a listing to attach a review to.
 > `x`), which triggers its `onerror` handler and runs our JavaScript. `<svg onload=...>`
 > works the same way.
 
----
+
 
 ## 3. Observe the attack firing
 
