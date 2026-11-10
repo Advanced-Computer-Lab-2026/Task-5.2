@@ -65,12 +65,10 @@ JWT_EXPIRES_IN=7d
 
 Unlike the NoSQL Injection task, this attack runs entirely **in the browser — no Postman needed**. Look through the `Flow.md` Markdown file for the detailed steps to simulate the `Stored XSS` attack, see the injected script execute, and watch it read the victim's login token out of `localStorage`. After reading the file Read the next section.
 
-## Task
+## Security fix
 
-Every attack from the `Flow.md` file works because the Reviews feature trusts user input and renders it as **raw HTML** in every viewer's browser. The server (`reviewController.js`) stores the `body` with no sanitation, the client's `lib/sanitize.js` passes it through untouched, and `ReviewList.jsx` injects it with `dangerouslySetInnerHTML` — with no `Content-Security-Policy` to stop injected scripts from running.
+The original implementation described in `Flow.md` was vulnerable because it rendered review input as raw HTML. The server still stores review bodies as submitted, but the client sanitizes them through a DOMPurify allowlist before the `dangerouslySetInnerHTML` sink. Helmet also sends a custom Content-Security-Policy that restricts scripts to the same origin and blocks inline script execution. These protections preserve allowed formatting while preventing the documented injected scripts from running.
 
-**Fix it.** Make posting and viewing reviews safe while keeping their legitimate formatting, then re-run every attack in this file and confirm each one now fails. Think about: sanitizing vs escaping untrusted HTML, the single place the HTML is rendered (the `dangerouslySetInnerHTML` sink), never trusting user-supplied markup, and constraining what the browser is allowed to execute with a security header.
+DOMPurify sanitizes the markup before it is rendered, while the CSP is enforced by the browser to restrict what may execute. These independent controls provide defense in depth; any new review-rendering surface must also sanitize untrusted markup before inserting it as HTML.
 
-Your solution should utilize the `DOMPurify` package together with a custom configured `Content-Security-Policy` header via the `helmet` package. You are expected to know the difference between `DOMPurify` (which sanitizes the data/markup on the client before it is rendered) and a `Content-Security-Policy` (a browser-enforced policy sent by the server that restricts what may run), and to think carefully about why layering both — **defense-in-depth** — is stronger than either one alone.
-
-> A `jest` test suite ships with this task. From the project root, run `npm install` then `npm test`. The tests encode the secure behavior, so they **fail now** and **pass once your fix is applied** — use them to verify your work.
+> Run `npm install` then `npm test` from the project root to verify the review sanitizer and CSP behavior. The server tests use `mongodb-memory-server`, which may need to download its MongoDB binary on the first run.

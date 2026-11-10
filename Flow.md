@@ -1,15 +1,16 @@
 # Flow — Simulating the Stored XSS Attack
 
-This project ships a **deliberately vulnerable** feature: *Reviews on listings*. A
-review's body is stored exactly as typed and rendered as raw HTML in every viewer's
-browser. That lets an attacker store JavaScript that runs in other people's sessions —
-a classic **stored (persistent) Cross-Site Scripting (XSS)** bug.
+This walkthrough describes the original vulnerable version of *Reviews on listings*.
+In that version, a review's body was stored exactly as typed and rendered as raw HTML,
+allowing a classic **stored (persistent) Cross-Site Scripting (XSS)** attack. The
+implementation has since been fixed: review markup is sanitized before rendering and a
+Content-Security-Policy restricts which scripts the browser can run.
 
 Because the app keeps its login token (`JWT`) in `localStorage`, the injected script can
 read that token and hijack the victim's session.
 
-Follow the steps below to reproduce the attack yourself, then read *Why it works* to
-understand the code path, and the final section to run the tests.
+The steps below document the original attack and its vulnerable code path. Use the
+verification section to confirm that the current implementation blocks it.
 
 ---
 
@@ -73,7 +74,7 @@ You need a logged-in user and a listing to attach a review to.
 
 ---
 
-## 3. Observe the attack firing
+## 3. Observe the attack on the vulnerable baseline
 
 As soon as the reviews list renders your review (it happens immediately after posting,
 and again every time the page is loaded):
@@ -95,7 +96,7 @@ the attacker required.
 
 ---
 
-## 4. Why it works (the vulnerable code path)
+## 4. Why it worked (the vulnerable code path)
 
 Trace a review body from input to screen:
 
@@ -116,12 +117,22 @@ Trace a review body from input to screen:
 
    `dangerouslySetInnerHTML` sets `innerHTML` directly, so the attacker's markup becomes
    live DOM — including the `onerror` handler, which the browser runs.
-4. **Nothing stops the inline script** — the server sends **no Content-Security-Policy
-   header** (`server/src/app.js` has no `helmet`), so the browser has no policy telling it
-   to refuse inline/injected JavaScript.
+4. **Nothing stopped the inline script** — the original server sent no
+   Content-Security-Policy header, so the browser had no policy telling it to refuse
+   inline/injected JavaScript.
 
-Fixing the bug means closing this path: sanitize the HTML before rendering **and** add a
-CSP that blocks inline script. (That is exactly what the solution project does.)
+## 5. Verify the fix
+
+Post the payload from step 2 with the current implementation. It remains stored as
+review text, but DOMPurify removes the unsupported image and its event handler before the
+HTML reaches the rendering sink, so no alert runs. Try the `<svg onload=...>` and
+`javascript:` link variants as well: the allowlist removes unsupported elements and
+DOMPurify rejects unsafe link protocols. Legitimate formatting such as bold text and
+links remains available.
+
+The API also sends a Content-Security-Policy header (`script-src 'self'`) through
+Helmet. This independently blocks inline script execution if unsafe markup ever reaches
+a browser, providing defense in depth alongside DOMPurify.
 
 ---
 
@@ -134,13 +145,11 @@ npm install     # first time only
 npm test        # (same as: npm run test)
 ```
 
-What to expect **in this vulnerable project**:
+The tests encode the secure behavior:
 
-- The tests describe the **secure** behavior the feature *should* have (review HTML is
-  sanitized; the server sends a strict CSP header).
-- So here they are **expected to FAIL** — currently **5 fail, 2 pass**. That red result is
-  the starting point: your job is to make them green by applying the fix (sanitize on the
-  client, add a CSP header on the server). The solution project shows all 7 passing.
+- Review HTML is sanitized before rendering, and API responses include a CSP that blocks
+  inline scripts.
+- The client and server test suites should pass with the fix in place.
 
 Notes:
 
