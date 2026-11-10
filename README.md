@@ -1,5 +1,50 @@
 # Task 5 (Variant): Campus Marketplace - With Listing Reviews
 
+The stored-XSS fix is implemented. Reviews pass through DOMPurify immediately
+before rendering, and Helmet sends a custom CSP on Express API responses.
+Vite and the client's API URL use the original repository configuration.
+The original assignment and attack walkthrough remain
+below for reference.
+
+From PowerShell in the project root:
+
+```powershell
+npm install
+npm test
+npm run dev
+```
+
+Open **http://localhost:5175**. The API runs on port **4000**. Keep your existing
+`server/.env`; it needs `PORT=4000`, `MONGO_URI`, `JWT_SECRET`, and
+`JWT_EXPIRES_IN`. A root install covers both workspaces, so `install:all` is
+optional. Use Node.js 22.12+ or 24+ with these dependencies.
+
+To check the production build, run `npm run build --workspace client`.
+
+The repository's original 7 Jest checks cover review creation and reading,
+unsafe markup, ordinary review text, and CSP headers. They use an isolated
+temporary MongoDB through `mongodb-memory-server`, which downloads and caches
+its executable when needed. On Windows, `jest.config.cjs` automatically detects
+MongoDB installed under `Program Files/MongoDB/Server` to avoid that download.
+You can also set `MONGOMS_SYSTEM_BINARY` explicitly. The tests and Jest/Babel setup
+come from the repository's `.vscode/setup*.js` templates; no custom test files
+or additional MongoDB setup helper are required.
+
+The sanitizer allows paragraphs, line breaks, emphasis, lists, blockquotes, code,
+and safe links. It strips executable markup, images, SVG, styles, and arbitrary
+attributes. Stored bodies remain untrusted HTML: sanitizing at the render sink
+also protects reviews that were saved before this fix. Escaping everything would
+show markup as literal text and lose the supported formatting.
+
+CSP restricts script execution, resource loading, and connections for the
+responses it protects. Here Helmet sets it on Express responses, as checked by
+the original server tests. Vite serves the frontend separately without a CSP
+header; reviews on that page are protected by DOMPurify at the rendering sink.
+A deployed frontend needs a CSP on its HTML response for that additional
+browser-enforced protection. See the
+[DOMPurify configuration reference](https://github.com/cure53/DOMPurify),
+[Helmet reference](https://helmetjs.github.io/).
+
 We will building on top of the campus marketplace variant in task 3. Previously we implemented `JWT` authentication and now a new model and controller have been added. Let us first start with some context.
 ## Context
 
@@ -38,12 +83,12 @@ npm run install:all   # For safety
 npm run dev           # API on :4000, client on :5175
 ```
 
-Create the `server/.env` file.
+Create `server/.env` only if you do not already have one. Supply your own values.
 
 ```ini
 PORT=4000
-MONGO_URI=mongodb://tasks:pass1234@ac-j3acrgb-shard-00-00.lueesfz.mongodb.net:27017,ac-j3acrgb-shard-00-01.lueesfz.mongodb.net:27017,ac-j3acrgb-shard-00-02.lueesfz.mongodb.net:27017/?ssl=true&replicaSet=atlas-6to6iy-shard-0&authSource=admin&appName=Cluster0
-JWT_SECRET=9eb831018aa7af4da2dddf7397501d2aa5886ad43f3cb6e0a17a0aa6050006cc
+MONGO_URI=<your MongoDB connection string>
+JWT_SECRET=<your long random secret>
 JWT_EXPIRES_IN=7d
 ```
 

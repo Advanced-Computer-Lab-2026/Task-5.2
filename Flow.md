@@ -1,5 +1,28 @@
 # Flow — Simulating the Stored XSS Attack
 
+The following walkthrough describes the original vulnerable behavior. The fix is
+now implemented. Repeat the same steps to verify the secure behavior: no alert
+appears, no attacker request is sent, and review text and safe formatting remain.
+
+Verification after the fix:
+
+| Input | Expected result |
+| --- | --- |
+| `<img src=x onerror="alert(...)">` | Image and handler removed; no alert |
+| `<img src=x onerror="fetch(...)">` | Image and handler removed; no token request |
+| `<svg onload="alert(1)"></svg>` | SVG removed; no alert |
+| `<script>alert(1)</script>` | Script removed from the rendered DOM |
+| `<a href="javascript:alert(1)">click</a>` | Unsafe URL removed; link text retained |
+| `<b>bold</b>`, line breaks, safe HTTPS links | Formatting and safe links retained |
+
+Review HTML is sanitized by DOMPurify before rendering. Helmet sends CSP on
+Express API responses. The original Vite configuration is unchanged, so it does
+not add CSP to the frontend document; the frontend's review protection is the
+sanitizer. The original Jest suites check sanitized markup and API CSP headers.
+
+`npm test` runs the repository's original 7 checks. The historical description of failing tests below
+applies to the original starter, before these fixes.
+
 This project ships a **deliberately vulnerable** feature: *Reviews on listings*. A
 review's body is stored exactly as typed and rendered as raw HTML in every viewer's
 browser. That lets an attacker store JavaScript that runs in other people's sessions —
@@ -147,5 +170,5 @@ Notes:
 - The server tests spin up an **in-memory MongoDB** via `mongodb-memory-server`. The first
   run downloads a small `mongod` binary, so you need **internet access the first time**
   (it is cached afterwards).
-- You need **Node.js 18+ (20 recommended)** installed.
+- Use **Node.js 22.12+ or 24+** for the current dependency versions.
 - The same `npm test` works on **Windows, macOS, and Linux** — no OS-specific setup.
