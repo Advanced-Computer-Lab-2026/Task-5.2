@@ -1,4 +1,5 @@
 import express from 'express';
+import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
 import authRoutes from './routes/auth.js';
@@ -8,6 +9,17 @@ import reviewRoutes from './routes/reviews.js';
 
 const app = express();
 
+// script-src allows only this origin: no inline scripts and no eval.
+// Helmet's default resource policy is same-origin, which would block the
+// Vite client on port 5175. same-site still allows that localhost client.
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      scriptSrc: ["'self'"]
+    }
+  },
+  crossOriginResourcePolicy: { policy: 'same-site' }
+}));
 app.use(morgan('dev'));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
 app.use(express.json());
