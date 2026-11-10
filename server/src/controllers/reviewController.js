@@ -5,7 +5,10 @@ const reviewSchema = Joi.object({
   listing: Joi.string().hex().length(24).required(),
   rating: Joi.number().min(1).max(5).default(5),
   // The body is free-form HTML (the reviewer can add bold text, links, etc.).
-  body: Joi.string().min(1).required(),
+  // It is untrusted: it is sanitized with DOMPurify at the render sink on the
+  // client, and the CSP header blocks any script that would slip through.
+  // A length cap keeps attackers from storing oversized payloads.
+  body: Joi.string().trim().min(1).max(5000).required(),
   // the author is always the logged-in user, never taken from the body
   author: Joi.forbidden()
 });
