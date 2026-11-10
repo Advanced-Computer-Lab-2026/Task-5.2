@@ -8,20 +8,6 @@ import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import app from '../../server/src/app.js';
 
-let mongo;
-
-beforeAll(async () => {
-  process.env.JWT_SECRET = 'test-secret';
-  process.env.JWT_EXPIRES_IN = '1h';
-  mongo = await MongoMemoryServer.create();
-  await mongoose.connect(mongo.getUri());
-}, 60000);
-
-afterAll(async () => {
-  await mongoose.disconnect();
-  if (mongo) await mongo.stop();
-});
-
 async function registerAndGetToken() {
   const res = await request(app)
     .post('/api/auth/register')
@@ -30,6 +16,20 @@ async function registerAndGetToken() {
 }
 
 describe('Reviews API', () => {
+  let mongo;
+
+  beforeAll(async () => {
+    process.env.JWT_SECRET = 'test-secret';
+    process.env.JWT_EXPIRES_IN = '1h';
+    mongo = await MongoMemoryServer.create();
+    await mongoose.connect(mongo.getUri());
+  }, 60000);
+
+  afterAll(async () => {
+    await mongoose.disconnect();
+    if (mongo) await mongo.stop();
+  });
+
   test('a logged-in user can create a review and it can be read back', async () => {
     const token = await registerAndGetToken();
 
