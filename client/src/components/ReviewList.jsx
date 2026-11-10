@@ -1,8 +1,9 @@
 import { sanitizeHtml } from '../lib/sanitize'
 
 // Renders a list of reviews. Each review body is HTML (reviewers can use light
-// formatting), so it is injected with dangerouslySetInnerHTML after passing
-// through sanitizeHtml — the one seam responsible for keeping it safe.
+// formatting), so it is injected with dangerouslySetInnerHTML ONLY after passing
+// through sanitizeHtml (DOMPurify, allow-list config) — the one seam responsible
+// for keeping it safe. Never pass r.body to the sink without it.
 export default function ReviewList({ reviews }) {
   if (!reviews || reviews.length === 0) {
     return <div className="text-sm text-zinc-600">No reviews yet.</div>
