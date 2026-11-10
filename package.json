@@ -8,7 +8,8 @@
   "scripts": {
     "install:all": "npm --workspaces install",
     "dev": "concurrently -n server,client -c blue,magenta \"npm:dev --workspace server\" \"npm:dev --workspace client\"",
-    "test": "jest"
+    "test": "jest",
+    "test:security": "node --test tests/security.mjs"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
@@ -21,6 +22,7 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.0.0",
+    "jsdom": "^31.0.0",
     "mongodb-memory-server": "^11.3.0",
     "supertest": "^7.0.0"
   }
