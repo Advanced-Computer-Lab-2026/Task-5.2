@@ -1,12 +1,37 @@
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
+import helmet from 'helmet';
 import authRoutes from './routes/auth.js';
 import listingRoutes from './routes/listings.js';
 import userRoutes from './routes/users.js';
 import reviewRoutes from './routes/reviews.js';
 
 const app = express();
+
+// Security headers + a strict, custom Content-Security-Policy.
+// The CSP is enforced by the browser: even if some injected markup slipped past
+// sanitization, inline scripts and event handlers (onerror=...) are refused, and
+// scripts may only be loaded from our own origin.
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],            // no 'unsafe-inline', no 'unsafe-eval'
+        scriptSrcAttr: ["'none'"],        // blocks inline handlers like onerror="..."
+        styleSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:'],
+        connectSrc: ["'self'"],           // where fetch/XHR may send data (stops exfiltration)
+        objectSrc: ["'none'"],            // no <object>/<embed> plugins
+        baseUri: ["'self'"],              // stops <base href> hijacking
+        formAction: ["'self'"],
+        frameAncestors: ["'none'"]        // no clickjacking via iframes
+      }
+    }
+  })
+);
 
 app.use(morgan('dev'));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
