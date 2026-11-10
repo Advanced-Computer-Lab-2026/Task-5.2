@@ -5,4 +5,16 @@
 // TODO (security): right now this returns the HTML untouched, so whatever a
 // reviewer typed — including <script> and onerror handlers — is injected into
 // every viewer's page. Make this strip dangerous markup before it is rendered.
-export const sanitizeHtml = (dirty) => dirty;
+import DOMPurify from 'dompurify';
+
+/**
+ * Clean untrusted HTML strings to prevent XSS attacks in components.
+ * @param {string} dirtyHtml 
+ * @returns {string} Sanitized HTML string
+ */
+export function sanitizeHtml(dirtyHtml) {
+  if (!dirtyHtml) return '';
+  return DOMPurify.sanitize(dirtyHtml);
+}
+
+
