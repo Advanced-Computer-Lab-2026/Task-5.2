@@ -1,4 +1,5 @@
 import express from 'express';
+import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
 import authRoutes from './routes/auth.js';
@@ -8,6 +9,20 @@ import reviewRoutes from './routes/reviews.js';
 
 const app = express();
 
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'https:'],
+      connectSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      frameAncestors: ["'none'"]
+    }
+  }
+}));
 app.use(morgan('dev'));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
 app.use(express.json());
