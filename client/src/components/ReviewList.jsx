@@ -1,4 +1,5 @@
-import sanitizeHtml from "sanitize-html"
+import { sanitizeHtml } from '../lib/sanitize'
+
 // Renders a list of reviews. Each review body is HTML (reviewers can use light
 // formatting), so it is injected with dangerouslySetInnerHTML after passing
 // through sanitizeHtml — the one seam responsible for keeping it safe.
@@ -17,13 +18,7 @@ export default function ReviewList({ reviews }) {
                     </div>
                     <div
                         className="review-body mt-2 text-sm"
-                        dangerouslySetInnerHTML={{
-                            __html: sanitizeHtml(r.body,
-                                {
-                                    allowedTags: ['h1', 'p', 'b', 'i'],
-                                    allowedAttributes: {} // Block all attributes entirely
-                                })
-                        }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(r.body) }}
                     />
                 </div>
             ))}
