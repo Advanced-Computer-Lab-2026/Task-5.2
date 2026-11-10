@@ -116,10 +116,3 @@ if (!fs.existsSync(workflowDir)) {
   fs.mkdirSync(workflowDir, { recursive: true });
 }
 fs.writeFileSync(filePath, ciContent, { encoding: 'utf8' });
-
-if (!fs.existsSync(claudePath)) {
-  fs.writeFileSync(claudePath, templateContent, { encoding: 'utf8' });
-}
-if (!fs.existsSync(agentsPath)) {
-  fs.writeFileSync(agentsPath, templateContent, { encoding: 'utf8' });
-}
