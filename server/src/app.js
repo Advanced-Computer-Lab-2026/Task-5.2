@@ -1,12 +1,29 @@
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
+import helmet from 'helmet';
 import authRoutes from './routes/auth.js';
 import listingRoutes from './routes/listings.js';
 import userRoutes from './routes/users.js';
 import reviewRoutes from './routes/reviews.js';
 
 const app = express();
+
+// Browser-enforced backstop for XSS: only same-origin scripts may run, and
+// inline/injected script (event handlers, javascript: URLs) is refused.
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      'default-src': ["'self'"],
+      'script-src': ["'self'"],
+      'script-src-attr': ["'none'"],
+      'object-src': ["'none'"],
+      'base-uri': ["'self'"],
+      'frame-ancestors': ["'none'"]
+    }
+  }
+}));
 
 app.use(morgan('dev'));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
