@@ -1,6 +1,7 @@
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
+import helmet from 'helmet';
 import authRoutes from './routes/auth.js';
 import listingRoutes from './routes/listings.js';
 import userRoutes from './routes/users.js';
@@ -9,6 +10,22 @@ import reviewRoutes from './routes/reviews.js';
 const app = express();
 
 app.use(morgan('dev'));
+// Content-Security-Policy: only same-origin scripts may run, and inline script or
+// inline event handlers (onerror=..., onload=...) are blocked.
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: false,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      scriptSrcAttr: ["'none'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"]
+    }
+  }
+}));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
 app.use(express.json());
 
