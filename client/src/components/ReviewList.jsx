@@ -17,9 +17,7 @@ export default function ReviewList({ reviews }) {
             {' • '}by {r.author?.name || 'unknown'}
           </div>
           <div
-            className="review-body mt-2 text-sm"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(r.body) }}
-          />
+            dangerouslySetInnerHTML={{__html: sanitizeHtml(r.body),}}/>
         </div>
       ))}
     </div>
