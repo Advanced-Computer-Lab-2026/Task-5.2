@@ -7,6 +7,7 @@ import userRoutes from './routes/users.js';
 import reviewRoutes from './routes/reviews.js';
 
 const app = express();
+const helmet = require('helmet');
 
 app.use(morgan('dev'));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
@@ -24,6 +25,21 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Not Found' });
 });
 
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        "default-src": ["'self'"],
+        "script-src": ["'self'"],
+        "scriptSrcAttr": ["'none'"],
+        "style-src": ["'self'"],
+        "img-src": ["'self'", "data:"],
+        connectSrc: ["'self'"],
+      }
+    }
+  })
+);
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err);
