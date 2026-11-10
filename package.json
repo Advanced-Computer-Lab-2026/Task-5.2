@@ -23,5 +23,8 @@
     "jest-environment-jsdom": "^30.0.0",
     "mongodb-memory-server": "^11.3.0",
     "supertest": "^7.0.0"
+  },
+  "dependencies": {
+    "dompurify": "^3.4.17"
   }
 }

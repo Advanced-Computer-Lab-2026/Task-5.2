@@ -1,4 +1,5 @@
 import { sanitizeHtml } from '../lib/sanitize'
+import DOMPurify from 'dompurify';
 
 // Renders a list of reviews. Each review body is HTML (reviewers can use light
 // formatting), so it is injected with dangerouslySetInnerHTML after passing
@@ -18,10 +19,12 @@ export default function ReviewList({ reviews }) {
           </div>
           <div
             className="review-body mt-2 text-sm"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(r.body) }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(r.body) }}
           />
         </div>
       ))}
     </div>
   )
 }
+
+

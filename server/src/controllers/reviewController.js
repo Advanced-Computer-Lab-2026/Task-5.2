@@ -1,6 +1,7 @@
 import Joi from 'joi';
 import { Review } from '../models/Review.js';
 
+
 const reviewSchema = Joi.object({
   listing: Joi.string().hex().length(24).required(),
   rating: Joi.number().min(1).max(5).default(5),
