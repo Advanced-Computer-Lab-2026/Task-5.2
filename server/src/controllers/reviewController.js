@@ -30,7 +30,7 @@ export async function getReviewsForListing(req, res, next) {
   } catch (err) { next(err); }
 }
 
-// POST /api/reviews  (requires auth)
+// POST /api/reviews  (requires auth).
 export async function createReview(req, res, next) {
   try {
     const { value, error } = reviewSchema.validate(req.body);
