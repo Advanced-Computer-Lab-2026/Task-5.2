@@ -1,6 +1,7 @@
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
+import helmet from 'helmet';
 import authRoutes from './routes/auth.js';
 import listingRoutes from './routes/listings.js';
 import userRoutes from './routes/users.js';
@@ -8,6 +9,28 @@ import reviewRoutes from './routes/reviews.js';
 
 const app = express();
 
+// Security headers. The Content-Security-Policy is enforced by the browser: even if
+// some attacker markup slipped past sanitization, the browser refuses to run inline
+// scripts / inline event handlers (onerror=, onload=) or scripts from other origins.
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],            // no 'unsafe-inline', no 'unsafe-eval'
+        scriptSrcAttr: ["'none'"],        // blocks onerror="..." style handlers
+        objectSrc: ["'none'"],            // no <object>/<embed> plugins
+        baseUri: ["'self'"],              // stop <base href> hijacking relative URLs
+        frameAncestors: ["'none'"],       // no clickjacking via iframes
+        formAction: ["'self'"],
+        imgSrc: ["'self'", 'data:'],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        connectSrc: ["'self'"]            // fetch()/XHR can't exfiltrate to attacker.example
+      }
+    }
+  })
+);
 app.use(morgan('dev'));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
 app.use(express.json());
