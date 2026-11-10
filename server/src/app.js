@@ -1,6 +1,7 @@
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
+import helmet from 'helmet';
 import authRoutes from './routes/auth.js';
 import listingRoutes from './routes/listings.js';
 import userRoutes from './routes/users.js';
@@ -11,6 +12,23 @@ const app = express();
 app.use(morgan('dev'));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
 app.use(express.json());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],          // no inline scripts, no inline event handlers
+        scriptSrcAttr: ["'none'"],      // explicitly blocks onerror=, onload=, etc.
+        objectSrc: ["'none'"],          // no <object>/<embed>
+        baseUri: ["'self'"],
+        frameAncestors: ["'none'"],     // anti-clickjacking
+        imgSrc: ["'self'", "data:"],
+        connectSrc: ["'self'"],         // blocks fetch() to attacker.example
+      },
+    },
+  })
+);
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
