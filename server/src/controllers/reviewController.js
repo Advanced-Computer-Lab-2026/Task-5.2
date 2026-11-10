@@ -1,5 +1,10 @@
 import Joi from 'joi';
 import { Review } from '../models/Review.js';
+import createDOMPurify from 'dompurify';
+import { JSDOM } from 'jsdom';
+
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
 
 const reviewSchema = Joi.object({
   listing: Joi.string().hex().length(24).required(),
@@ -9,6 +14,11 @@ const reviewSchema = Joi.object({
   // the author is always the logged-in user, never taken from the body
   author: Joi.forbidden()
 });
+
+const PURIFY_CONFIG = {
+  ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br'], // Allow basic formatting
+  ALLOWED_ATTR: ['href', 'target', 'rel'], // Only allow safe attributes for links
+};
 
 // GET /api/reviews?listing=<id>  (public)
 export async function getReviewsForListing(req, res, next) {
@@ -30,7 +40,16 @@ export async function createReview(req, res, next) {
     const { value, error } = reviewSchema.validate(req.body);
     if (error) return res.status(400).json({ message: error.message });
 
-    const doc = await Review.create({ ...value, author: req.user.id });
+    const sanitizedBody = DOMPurify.sanitize(value.body || '', PURIFY_CONFIG);
+    // Replace the raw body with the sanitized version before saving
+    const safeData = {
+      ...value,
+      body: sanitizedBody
+    
+    };
+
+
+    const doc = await Review.create({ ...safeData, author: req.user.id });
     const review = await Review.findById(doc._id).populate('author', 'name').lean();
     res.status(201).json({ review });
   } catch (err) { next(err); }
