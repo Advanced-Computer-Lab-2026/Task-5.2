@@ -30,12 +30,12 @@ app.use('/api/listings', listingRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/reviews', reviewRoutes);
 
-// Not found
+
 app.use((req, res) => {
   res.status(404).json({ message: 'Not Found' });
 });
 
-// Error handler
+
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(err.status || 500).json({ message: err.message || 'Server Error' });
