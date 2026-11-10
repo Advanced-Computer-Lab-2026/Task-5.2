@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import { Review } from '../models/Review.js';
+import { sanitizeReviewHtml } from '../lib/sanitizeReviewHtml.js';
 
 const reviewSchema = Joi.object({
   listing: Joi.string().hex().length(24).required(),
@@ -30,7 +31,11 @@ export async function createReview(req, res, next) {
     const { value, error } = reviewSchema.validate(req.body);
     if (error) return res.status(400).json({ message: error.message });
 
-    const doc = await Review.create({ ...value, author: req.user.id });
+    // Strip unsafe markup before storing; reject bodies that are left empty.
+    const body = sanitizeReviewHtml(value.body);
+    if (!body) return res.status(400).json({ message: 'Review body has no allowed content' });
+
+    const doc = await Review.create({ ...value, body, author: req.user.id });
     const review = await Review.findById(doc._id).populate('author', 'name').lean();
     res.status(201).json({ review });
   } catch (err) { next(err); }
