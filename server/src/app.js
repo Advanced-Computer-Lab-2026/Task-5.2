@@ -5,9 +5,12 @@ import authRoutes from './routes/auth.js';
 import listingRoutes from './routes/listings.js';
 import userRoutes from './routes/users.js';
 import reviewRoutes from './routes/reviews.js';
+import { securityHeaders } from './config/security.js';
 
 const app = express();
 
+// Security headers (incl. a strict Content-Security-Policy) on every response.
+app.use(securityHeaders);
 app.use(morgan('dev'));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
 app.use(express.json());
