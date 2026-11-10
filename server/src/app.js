@@ -1,6 +1,9 @@
+
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
+import helmet from 'helmet';
+
 import authRoutes from './routes/auth.js';
 import listingRoutes from './routes/listings.js';
 import userRoutes from './routes/users.js';
@@ -8,8 +11,39 @@ import reviewRoutes from './routes/reviews.js';
 
 const app = express();
 
+// Security headers and Content Security Policy
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        fontSrc: ["'self'", 'data:'],
+        connectSrc: [
+          "'self'",
+          'http://localhost:4000',
+          'http://localhost:5175',
+          'ws://localhost:5175'
+        ],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        frameAncestors: ["'none'"],
+        formAction: ["'self'"],
+        upgradeInsecureRequests: null
+      }
+    }
+  })
+);
+
 app.use(morgan('dev'));
-app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
+
+app.use(cors({
+  origin: 'http://localhost:5175',
+  credentials: false
+}));
+
 app.use(express.json());
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
@@ -27,7 +61,9 @@ app.use((req, res) => {
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(err.status || 500).json({ message: err.message || 'Server Error' });
+  res.status(err.status || 500).json({
+    message: err.message || 'Server Error'
+  });
 });
 
 export default app;
